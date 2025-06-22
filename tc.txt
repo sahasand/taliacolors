@@ -1,0 +1,59 @@
+Create a stunning, modern website for 'Talia Colors' - a premium hair coloring business. Build a complete responsive website with the following specifications:
+
+**Design Requirements:**
+- Modern, elegant design with a beauty/salon aesthetic
+- Color palette inspired by vibrant hair colors: rich purples, rose golds, platinum silvers, deep burgundies, and warm coppers
+- Clean, minimalist layout with artistic flair
+- Mobile-first responsive design
+- Smooth CSS animations and transitions
+
+**Website Structure:**
+1. **Hero Section**: 
+   - Captivating headline about hair transformation
+   - Stunning background with gradient overlays
+   - Call-to-action button for booking
+   - Floating color swatches animation
+
+2. **Services Section**:
+   - Color correction, highlights, balayage, fantasy colors
+   - Interactive service cards with hover effects
+   - Before/after image placeholders with elegant frames
+
+3. **About Section**:
+   - Story about Talia's expertise and passion
+   - Professional photo placeholder
+   - Color philosophy and technique highlights
+
+4. **Gallery Section**:
+   - Grid layout for hair transformation showcase
+   - Lightbox effect for image viewing
+   - Color category filters (Natural, Bold, Pastel, etc.)
+
+5. **Booking Section**:
+   - Contact form with validation
+   - Business hours and location
+   - Social media links with hair color icons
+
+**Technical Requirements:**
+- HTML5 semantic structure
+- Modern CSS with Flexbox/Grid
+- JavaScript for interactivity (form validation, image gallery, smooth scrolling)
+- CSS animations for color transitions and hover effects
+- Accessibility features (alt text, ARIA labels, keyboard navigation)
+- SEO-optimized meta tags
+- Cross-browser compatibility
+
+**Special Features:**
+- Interactive color picker tool for clients to explore options
+- Testimonials carousel with star ratings
+- Price calculator for different services
+- Instagram feed integration placeholder
+- Virtual consultation booking widget
+
+**Brand Personality:**
+- Professional yet creative
+- Welcoming and inclusive
+- High-end but approachable
+- Artistic and innovative
+
+Make it visually stunning with attention to typography, spacing, and color harmony. Use elegant transitions and modern web design trends like glassmorphism or subtle parallax effects where appropriate."
