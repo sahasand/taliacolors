@@ -68,7 +68,6 @@
                     <li role="none"><a href="#about" role="menuitem" data-translate="nav-about">Sobre</a></li>
                     <li role="none"><a href="#gallery" role="menuitem" data-translate="nav-gallery">Galeria</a></li>
                     <li role="none"><a href="#ai-color-picker" role="menuitem" data-translate="nav-ai-colors">IA Cores</a></li>
-                    <li role="none"><a href="#booking" role="menuitem" data-translate="nav-contact">Contato</a></li>
                 </ul>
             </div>
         </div>
@@ -89,10 +88,10 @@
             <div class="hero-content">
                 <h1 data-translate="hero-title">Transforme Seu Cabelo Em<br><span class="highlight">Obra de Arte</span></h1>
                 <p data-translate="hero-subtitle">Onde criatividade encontra expertise. Serviços premium de coloração capilar que dão vida à sua visão com resultados vibrantes e saudáveis.</p>
-                <button class="cta-button" aria-label="Agende sua transformação capilar">
+                <a href="https://wa.me/5548999169053" target="_blank" class="cta-button" aria-label="Agende sua transformação capilar">
                     <span data-translate="hero-cta">Agende Sua Transformação</span>
                     <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                </button>
+                </a>
             </div>
         </section>
 
@@ -496,154 +495,6 @@
         </section>
 
 
-        <section id="booking" class="booking" role="region" aria-labelledby="booking-heading">
-            <div class="container">
-                <h2 id="booking-heading" data-translate="booking-title">Agende Sua Transformação</h2>
-                <p class="section-subtitle" data-translate="booking-subtitle">Pronta para transformar seu cabelo? Vamos criar magia juntas!</p>
-                
-                <div class="booking-content">
-                    <div class="contact-form">
-                        <form id="booking-form" novalidate>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="name" data-translate="form-name">Nome Completo *</label>
-                                    <input type="text" id="name" name="name" required aria-describedby="name-error" autocomplete="name">
-                                    <span class="error-message" id="name-error"></span>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="email" data-translate="form-email">Endereço de Email *</label>
-                                    <input type="email" id="email" name="email" required aria-describedby="email-error" autocomplete="email">
-                                    <span class="error-message" id="email-error"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="phone" data-translate="form-phone">Número de Telefone *</label>
-                                    <input type="tel" id="phone" name="phone" required aria-describedby="phone-error" autocomplete="tel" pattern="[0-9\s\(\)\+\-]+">
-                                    <span class="error-message" id="phone-error"></span>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="preferred-service" data-translate="form-service">Serviço Preferido</label>
-                                    <select id="preferred-service" name="preferred-service">
-                                        <option value="" data-translate="form-select">Selecione um serviço</option>
-                                        <option value="consultation" data-translate="form-consultation">Consultoria de Cor</option>
-                                        <option value="balayage" data-translate="form-balayage">Balayage</option>
-                                        <option value="highlights" data-translate="form-highlights">Luzes</option>
-                                        <option value="fantasy" data-translate="form-fantasy">Cor Fantasia</option>
-                                        <option value="correction" data-translate="form-correction">Correção de Cor</option>
-                                        <option value="other" data-translate="form-other">Outro</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="message" data-translate="form-message">Conte-me sobre seus objetivos capilares *</label>
-                                <textarea id="message" name="message" rows="4" required aria-describedby="message-error" data-translate="form-placeholder" placeholder="Descreva seu cabelo atual, visual desejado e quaisquer preocupações específicas..."></textarea>
-                                <span class="error-message" id="message-error"></span>
-                            </div>
-                            
-                            <div class="form-group checkbox-group">
-                                <label class="checkbox-label" for="consultation">
-                                    <input type="checkbox" id="consultation" name="consultation">
-                                    <span class="checkmark" aria-hidden="true"></span>
-                                    <span data-translate="form-virtual">Tenho interesse em uma consulta virtual primeiro</span>
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="submit-btn">
-                                <span data-translate="form-submit">Enviar Mensagem</span>
-                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <div class="contact-info">
-                        <div class="info-card">
-                            <h3 data-translate="info-hours">Horário do Estúdio</h3>
-                            <div class="hours">
-                                <div class="hour-item">
-                                    <span data-translate="hours-mon-tue">Segunda - Terça</span>
-                                    <span data-translate="hours-closed">Fechado</span>
-                                </div>
-                                <div class="hour-item">
-                                    <span data-translate="hours-wed-fri">Quarta - Sexta</span>
-                                    <span>10:00 - 19:00</span>
-                                </div>
-                                <div class="hour-item">
-                                    <span data-translate="hours-sat">Sábado</span>
-                                    <span>09:00 - 18:00</span>
-                                </div>
-                                <div class="hour-item">
-                                    <span data-translate="hours-sun">Domingo</span>
-                                    <span>11:00 - 17:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-card" itemscope itemtype="https://schema.org/PostalAddress">
-                            <h3 data-translate="info-location">Localização</h3>
-                            <p data-translate="info-address">
-                                <span itemprop="name">Estúdio Premium de Cabelo</span><br>
-                                <span itemprop="streetAddress">Rua da Beleza, 123</span><br>
-                                <span itemprop="addressLocality">Distrito Criativo</span><br>
-                                <span itemprop="addressRegion">Cidade, Estado</span> <span itemprop="postalCode">12345</span>
-                            </p>
-                            <button class="map-btn">
-                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                                <span data-translate="info-map">Ver no Mapa</span>
-                            </button>
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3 data-translate="info-connect">Conecte-se Conosco</h3>
-                            <div class="social-links">
-                                <a href="#" aria-label="Instagram" class="social-link instagram">
-                                    <i class="fab fa-instagram"></i>
-                                    <span>@taliacolors</span>
-                                </a>
-                                <a href="#" aria-label="Facebook" class="social-link facebook">
-                                    <i class="fab fa-facebook"></i>
-                                    <span>Talia Colors</span>
-                                </a>
-                                <a href="#" aria-label="TikTok" class="social-link tiktok">
-                                    <i class="fab fa-tiktok"></i>
-                                    <span>@taliacolors</span>
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3 data-translate="info-instagram">Feed do Instagram</h3>
-                            <div class="instagram-feed">
-                                <div class="insta-post">
-                                    <div class="image-placeholder">
-                                        <i class="fab fa-instagram"></i>
-                                    </div>
-                                </div>
-                                <div class="insta-post">
-                                    <div class="image-placeholder">
-                                        <i class="fab fa-instagram"></i>
-                                    </div>
-                                </div>
-                                <div class="insta-post">
-                                    <div class="image-placeholder">
-                                        <i class="fab fa-instagram"></i>
-                                    </div>
-                                </div>
-                                <div class="insta-post">
-                                    <div class="image-placeholder">
-                                        <i class="fab fa-instagram"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer class="footer" role="contentinfo">
@@ -660,16 +511,14 @@
                         <li><a href="#services" data-translate="nav-services">Serviços</a></li>
                         <li><a href="#about" data-translate="nav-about">Sobre</a></li>
                         <li><a href="#gallery" data-translate="nav-gallery">Galeria</a></li>
-                        <li><a href="#booking" data-translate="nav-contact">Contato</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-contact" itemscope itemtype="https://schema.org/ContactPoint">
                     <h4 data-translate="footer-contact">Informações de Contato</h4>
-                    <p data-translate="footer-address" itemprop="address">Rua da Beleza, 123<br>Distrito Criativo<br>Cidade, Estado 12345</p>
                     <p data-translate="footer-phone-email">
-                        Telefone: <span itemprop="telephone">(11) 9 1234-5678</span><br>
-                        Email: <span itemprop="email">ola@taliacolors.com</span>
+                        Telefone: <a href="https://wa.me/5548999169053" target="_blank" itemprop="telephone">+55 48 99916-9053</a><br>
+                        Email: <span itemprop="email">vileniat@gmail.com</span>
                     </p>
                 </div>
             </div>

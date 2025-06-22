@@ -171,7 +171,7 @@ const translations = {
         'footer-links': 'Links Rápidos',
         'footer-contact': 'Informações de Contato',
         'footer-address': 'Rua da Beleza, 123<br>Distrito Criativo<br>Cidade, Estado 12345',
-        'footer-phone-email': 'Telefone: (11) 9 1234-5678<br>Email: ola@taliacolors.com',
+        'footer-phone-email': 'Telefone: +55 48 99916-9053<br>Email: vileniat@gmail.com',
         'footer-copyright': '© 2024 Talia Colors. Todos os direitos reservados.',
         'footer-crafted': 'Website criado com ❤️ para arte capilar',
 
@@ -349,7 +349,7 @@ const translations = {
         'footer-links': 'Quick Links',
         'footer-contact': 'Contact Info',
         'footer-address': '123 Beauty Lane<br>Creative District<br>City, State 12345',
-        'footer-phone-email': 'Phone: (555) 123-4567<br>Email: hello@taliacolors.com',
+        'footer-phone-email': 'Phone: +55 48 99916-9053<br>Email: vileniat@gmail.com',
         'footer-copyright': '© 2024 Talia Colors. All rights reserved.',
         'footer-crafted': 'Website crafted with ❤️ for hair artistry',
 
@@ -928,8 +928,8 @@ function setupAIColorPicker() {
     });
 
     bookConsultationBtn.addEventListener('click', () => {
-        // Scroll to booking section
-        document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+        // Since booking section is removed, scroll to top or another section
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // Smart scroll function with offset
