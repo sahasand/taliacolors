@@ -372,7 +372,6 @@ function initializeWebsite() {
     setupLanguageSelector();
     setupSmoothScrolling();
     setupGallery();
-    setupTestimonialsCarousel();
     setupColorPicker();
     setupPriceCalculator();
     setupContactForm();
@@ -548,39 +547,6 @@ function setupGallery() {
     });
 }
 
-// Testimonials Carousel Setup
-function setupTestimonialsCarousel() {
-    const testimonialCards = document.querySelectorAll('.testimonial-card');
-    const dots = document.querySelectorAll('.carousel-dots .dot');
-    let currentSlide = 0;
-
-    function showSlide(index) {
-        // Hide all cards
-        testimonialCards.forEach(card => card.classList.remove('active'));
-        dots.forEach(dot => dot.classList.remove('active'));
-        
-        // Show current card
-        testimonialCards[index].classList.add('active');
-        dots[index].classList.add('active');
-    }
-
-    // Dot navigation
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', function() {
-            currentSlide = index;
-            showSlide(currentSlide);
-        });
-    });
-
-    // Auto-advance carousel with cleanup
-    const carouselInterval = setInterval(() => {
-        currentSlide = (currentSlide + 1) % testimonialCards.length;
-        showSlide(currentSlide);
-    }, 5000);
-    
-    // Store interval for potential cleanup
-    window.testimonialCarouselInterval = carouselInterval;
-}
 
 // AI Color Picker Setup
 function setupColorPicker() {
