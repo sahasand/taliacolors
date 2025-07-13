@@ -377,6 +377,7 @@ function initializeWebsite() {
     setupContactForm();
     setupScrollAnimations();
     setupParallaxEffects();
+    setupMobileViewportHandling();
 }
 
 // Navigation Setup
@@ -399,15 +400,38 @@ function setupNavigation() {
         });
     });
 
-    // Navbar scroll effect
-    window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 100) {
+    // Navbar scroll effect with enhanced performance optimization
+    let navbarTicking = false;
+    const navbar = document.querySelector('.navbar');
+    let lastScrollY = window.scrollY;
+    
+    function updateNavbar() {
+        const currentScrollY = window.scrollY;
+        
+        // Only update if scroll position actually changed
+        if (Math.abs(currentScrollY - lastScrollY) < 1) {
+            navbarTicking = false;
+            return;
+        }
+        
+        if (currentScrollY > 100) {
             navbar.style.background = 'rgba(248, 250, 252, 0.98)';
         } else {
             navbar.style.background = 'rgba(248, 250, 252, 0.95)';
         }
-    });
+        
+        lastScrollY = currentScrollY;
+        navbarTicking = false;
+    }
+    
+    function requestNavbarUpdate() {
+        if (!navbarTicking) {
+            requestAnimationFrame(updateNavbar);
+            navbarTicking = true;
+        }
+    }
+    
+    window.addEventListener('scroll', requestNavbarUpdate, { passive: true });
 }
 
 // Language Selector Setup
@@ -486,7 +510,7 @@ function updatePriceCalculatorCurrency(lang) {
     }
 }
 
-// Smooth Scrolling Setup
+// Enhanced Smooth Scrolling Setup with mobile optimizations
 function setupSmoothScrolling() {
     const links = document.querySelectorAll('a[href^="#"]');
     
@@ -498,12 +522,50 @@ function setupSmoothScrolling() {
             const targetElement = document.getElementById(targetId);
             
             if (targetElement) {
-                const offsetTop = targetElement.offsetTop - 80; // Account for fixed navbar
+                // Enhanced mobile viewport detection
+                const isMobile = window.innerWidth <= 768;
+                const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+                const navbar = document.querySelector('.navbar');
+                const navbarHeight = navbar ? navbar.offsetHeight : 80;
                 
-                window.scrollTo({
-                    top: offsetTop,
-                    behavior: 'smooth'
-                });
+                // Mobile-specific offset calculations
+                let offset;
+                if (isMobile) {
+                    // Account for mobile browser chrome and keyboard
+                    offset = navbarHeight + 40;
+                } else if (isTablet) {
+                    offset = navbarHeight + 30;
+                } else {
+                    offset = navbarHeight + 20;
+                }
+                
+                // Use getBoundingClientRect for more accurate positioning
+                const rect = targetElement.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const elementTop = rect.top + scrollTop;
+                const scrollPosition = Math.max(0, elementTop - offset);
+                
+                // Check for reduced motion preference
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                
+                // Check for smooth scroll support
+                const supportsSmoothScroll = 'scrollBehavior' in document.documentElement.style;
+                
+                if (supportsSmoothScroll && !prefersReducedMotion) {
+                    window.scrollTo({
+                        top: scrollPosition,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    // Fallback for browsers without smooth scroll support
+                    // or users who prefer reduced motion
+                    if (prefersReducedMotion) {
+                        window.scrollTo(0, scrollPosition);
+                    } else {
+                        // Animate manually for better browser support
+                        animateScrollTo(scrollPosition);
+                    }
+                }
             }
         });
     });
@@ -674,10 +736,8 @@ function setupAIColorPicker() {
                                 return;
                             }
                             analyzeBtn.disabled = false;
-                            // Auto-scroll to analyze button when photo is successfully uploaded
-                            setTimeout(() => {
-                                scrollToAISection('analyze-photo', 180);
-                            }, 300);
+                            // Scroll to analyze button with consistent timing
+                            scrollToAISection('analyze-photo', 100);
                         } catch (error) {
                             console.error('Validation error:', error);
                             const message = currentLanguage === 'pt' 
@@ -734,10 +794,8 @@ function setupAIColorPicker() {
         validationError.style.display = 'block';
         photoUpload.style.display = 'none';
         
-        // Auto-scroll to error message
-        setTimeout(() => {
-            scrollToAISection('validation-error', 150);
-        }, 200);
+        // Scroll to error message immediately
+        scrollToAISection('validation-error', 80);
     }
 
     // Simulated AI image validation with weighted errors
@@ -800,10 +858,10 @@ function setupAIColorPicker() {
         // Keep analyze button disabled
         analyzeBtn.disabled = true;
         
-        // Auto-scroll to error message
-        setTimeout(() => {
-            scrollToAISection('validation-error', 150);
-        }, 300);
+        // Scroll to error message with slight delay for UI update
+        requestAnimationFrame(() => {
+            scrollToAISection('validation-error', 80);
+        });
     }
 
     // Reset photo upload state
@@ -819,10 +877,8 @@ function setupAIColorPicker() {
     // Retry upload functionality
     retryBtn.addEventListener('click', () => {
         resetPhotoUpload();
-        // Auto-scroll back to upload area
-        setTimeout(() => {
-            scrollToAISection('step-photo', 100);
-        }, 200);
+        // Scroll back to upload area immediately
+        scrollToAISection('step-photo', 100);
     });
 
     // Photo analysis
@@ -861,10 +917,8 @@ function setupAIColorPicker() {
                 frequency: frequency.value
             };
             getRecommendationsBtn.disabled = false;
-            // Auto-scroll to recommendations button when questionnaire is complete
-            setTimeout(() => {
-                scrollToAISection('get-recommendations', 180);
-            }, 300);
+            // Scroll to recommendations button smoothly
+            scrollToAISection('get-recommendations', 100);
         }
     }
 
@@ -887,66 +941,247 @@ function setupAIColorPicker() {
 
     restartBtn.addEventListener('click', () => {
         resetAIPicker();
-        // Auto-scroll back to the beginning of AI section
-        setTimeout(() => {
-            scrollToAISection('ai-color-picker-heading', 80);
-        }, 300);
+        // Scroll back to the beginning of AI section
+        scrollToAISection('ai-color-picker-heading', 80);
     });
 
     bookConsultationBtn.addEventListener('click', () => {
-        // Since booking section is removed, scroll to top or another section
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Use simple booking message
+        const isPortuguese = currentLanguage === 'pt';
+        const bookingMessage = isPortuguese ? 
+            'Olá! Gostaria de agendar uma consulta para coloração capilar. Quando você tem disponibilidade?' :
+            'Hello! I would like to book a hair coloring consultation. When do you have availability?';
+        
+        // Open WhatsApp with pre-filled booking message
+        const whatsappMessage = encodeURIComponent(bookingMessage);
+        const whatsappUrl = `https://wa.me/5548999169053?text=${whatsappMessage}`;
+        window.open(whatsappUrl, '_blank');
+        
+        // Scroll to contact section for additional information
+        setTimeout(() => {
+            const footerContact = document.querySelector('.footer-contact');
+            if (footerContact) {
+                const navbar = document.querySelector('.navbar');
+                const navbarHeight = navbar ? navbar.offsetHeight : 80;
+                const elementPosition = footerContact.offsetTop;
+                const scrollPosition = elementPosition - navbarHeight - 50;
+                
+                window.scrollTo({
+                    top: Math.max(0, scrollPosition),
+                    behavior: 'smooth'
+                });
+                
+                // Add subtle highlight effect to contact section
+                footerContact.style.animation = 'highlightContact 2s ease-out';
+                setTimeout(() => {
+                    footerContact.style.animation = '';
+                }, 2000);
+            } else {
+                // Fallback: scroll to footer if contact section not found
+                const footer = document.querySelector('.footer');
+                if (footer) {
+                    const navbar = document.querySelector('.navbar');
+                    const navbarHeight = navbar ? navbar.offsetHeight : 80;
+                    const elementPosition = footer.offsetTop;
+                    const scrollPosition = elementPosition - navbarHeight;
+                    
+                    window.scrollTo({
+                        top: Math.max(0, scrollPosition),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }, 300);
     });
+    
+    // Generate AI results summary for sharing
+    function generateAIResultsSummary() {
+        if (!skinToneAnalysis) return null;
+        
+        const isPortuguese = currentLanguage === 'pt';
+        const greeting = isPortuguese ? 
+            '🎨 Olá! Acabei de usar o seu AI Consultora de Cores e aqui estão meus resultados:' :
+            '🎨 Hello! I just used your AI Color Consultant and here are my results:';
+            
+        const skinToneLabel = isPortuguese ? 'Tom de Pele:' : 'Skin Tone:';
+        const skinToneText = isPortuguese ? 
+            (skinToneAnalysis.tone === 'warm' ? 'Quente' : skinToneAnalysis.tone === 'cool' ? 'Frio' : 'Neutro') :
+            (skinToneAnalysis.tone === 'warm' ? 'Warm' : skinToneAnalysis.tone === 'cool' ? 'Cool' : 'Neutral');
+            
+        const undertoneLabel = isPortuguese ? 'Subtom:' : 'Undertone:';
+        const undertoneText = isPortuguese ?
+            (skinToneAnalysis.undertone === 'golden' ? 'Dourado' : skinToneAnalysis.undertone === 'pink' ? 'Rosado' : 'Azeite') :
+            (skinToneAnalysis.undertone === 'golden' ? 'Golden' : skinToneAnalysis.undertone === 'pink' ? 'Pink' : 'Olive');
+            
+        const confidenceLabel = isPortuguese ? 'Confiança da IA:' : 'AI Confidence:';
+        const bookingText = isPortuguese ? 
+            'Gostaria de agendar uma consulta para discutir essas recomendações de cor!' :
+            'I would like to book a consultation to discuss these color recommendations!';
+        
+        return `${greeting}
 
-    // Smart scroll function with offset
-    function scrollToAISection(targetElementId = null, offset = 100) {
-        let targetElement;
-        
-        if (targetElementId) {
-            targetElement = document.getElementById(targetElementId);
-        } else {
-            // Default to AI section header
-            targetElement = document.getElementById('ai-color-picker-heading');
-        }
-        
-        if (targetElement) {
-            const elementPosition = targetElement.offsetTop - offset;
-            window.scrollTo({
-                top: Math.max(0, elementPosition),
-                behavior: 'smooth'
-            });
-        }
+${skinToneLabel} ${skinToneText}
+${undertoneLabel} ${undertoneText}
+${confidenceLabel} ${skinToneAnalysis.confidence}%
+
+${bookingText}`;
     }
 
-    // Helper functions
+    // Simplified and reliable AI section scroll function with accessibility
+    function scrollToAISection(targetElementId = null, offset = 100) {
+        const targetElement = targetElementId ? 
+            document.getElementById(targetElementId) : 
+            document.getElementById('ai-color-picker-heading');
+        
+        if (!targetElement) {
+            console.warn('Target element not found:', targetElementId);
+            return;
+        }
+        
+        // Set focus for screen readers after scroll
+        const shouldFocus = targetElement.hasAttribute('tabindex') || 
+                           targetElement.tagName.match(/^(BUTTON|INPUT|SELECT|TEXTAREA|A)$/);
+        
+        if (!shouldFocus && !targetElement.hasAttribute('tabindex')) {
+            targetElement.setAttribute('tabindex', '-1');
+        }
+        
+        // Use consistent navbar height calculation
+        const navbar = document.querySelector('.navbar');
+        const navbarHeight = navbar ? navbar.offsetHeight : 80;
+        
+        // Add mobile-specific adjustments
+        const isMobile = window.innerWidth <= 768;
+        const mobileAdjustment = isMobile ? 20 : 0;
+        const totalOffset = navbarHeight + offset + mobileAdjustment;
+        
+        // Calculate scroll position with viewport consideration
+        const rect = targetElement.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const elementTop = rect.top + scrollTop;
+        const scrollPosition = Math.max(0, elementTop - totalOffset);
+        
+        // Use requestAnimationFrame for smoother scrolling with fallback
+        requestAnimationFrame(() => {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const supportsSmoothScroll = 'scrollBehavior' in document.documentElement.style;
+            
+            const scrollComplete = () => {
+                // Set focus for accessibility after scroll completes
+                setTimeout(() => {
+                    try {
+                        targetElement.focus({ preventScroll: true });
+                    } catch (e) {
+                        // Fallback for browsers that don't support preventScroll
+                        targetElement.focus();
+                    }
+                }, prefersReducedMotion ? 0 : 100);
+            };
+            
+            if (supportsSmoothScroll && !prefersReducedMotion) {
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
+                scrollComplete();
+            } else if (prefersReducedMotion) {
+                window.scrollTo(0, scrollPosition);
+                scrollComplete();
+            } else {
+                animateScrollTo(scrollPosition, 400);
+                setTimeout(scrollComplete, 400);
+            }
+        });
+    }
+
+    // Improved step navigation with immediate scroll
     function goToStep(step) {
+        // Update UI state first
         document.querySelectorAll('.ai-step').forEach(s => s.classList.remove('active'));
         const stepElement = document.getElementById(`step-${step === 1 ? 'photo' : step === 2 ? 'questionnaire' : 'results'}`);
+        
+        if (!stepElement) {
+            console.warn('Step element not found for step:', step);
+            return;
+        }
+        
         stepElement.classList.add('active');
         
         document.querySelectorAll('.progress-step').forEach(s => s.classList.remove('active'));
-        document.querySelector(`[data-step="${step}"]`).classList.add('active');
+        const progressStep = document.querySelector(`[data-step="${step}"]`);
+        if (progressStep) {
+            progressStep.classList.add('active');
+        }
         
-        progressFill.style.width = `${(step / 3) * 100}%`;
+        if (progressFill) {
+            progressFill.style.width = `${(step / 3) * 100}%`;
+        }
         
         currentStep = step;
         
-        // Auto-scroll to the new step with a slight delay for smooth transition
-        setTimeout(() => {
-            scrollToAISection(stepElement.id, 120);
-        }, 100);
+        // Scroll immediately after UI update
+        requestAnimationFrame(() => {
+            scrollToAISection(stepElement.id, 80);
+        });
     }
 
     function performSkinToneAnalysis(photo) {
-        // Simulate AI skin tone analysis
+        // Enhanced AI skin tone analysis simulation with more sophisticated feedback
         const skinTones = ['warm', 'cool', 'neutral'];
         const selectedTone = skinTones[Math.floor(Math.random() * skinTones.length)];
         
-        return {
+        // Simulate more detailed analysis
+        const analysisData = {
             tone: selectedTone,
             undertone: selectedTone === 'warm' ? 'golden' : selectedTone === 'cool' ? 'pink' : 'olive',
-            confidence: Math.floor(Math.random() * 20) + 80 // 80-100%
+            confidence: Math.floor(Math.random() * 20) + 80, // 80-100%
+            dominantColors: generateDominantColors(selectedTone),
+            seasonalCategory: getSeasonalCategory(selectedTone),
+            lightingQuality: Math.floor(Math.random() * 30) + 70 // 70-100%
         };
+        
+        // Add visual confidence indicator
+        updateConfidenceIndicator(analysisData.confidence);
+        
+        return analysisData;
+    }
+    
+    function generateDominantColors(tone) {
+        const colorMaps = {
+            warm: ['#D2691E', '#CD853F', '#DEB887', '#F4A460'],
+            cool: ['#C0C0C0', '#E8E8E8', '#B0C4DE', '#E6E6FA'],
+            neutral: ['#A0522D', '#8B4513', '#F5DEB3', '#DDBEA9']
+        };
+        return colorMaps[tone] || colorMaps.neutral;
+    }
+    
+    function getSeasonalCategory(tone) {
+        const categories = {
+            warm: ['Autumn', 'Spring'],
+            cool: ['Winter', 'Summer'],
+            neutral: ['Soft Summer', 'Soft Autumn']
+        };
+        const options = categories[tone] || categories.neutral;
+        return options[Math.floor(Math.random() * options.length)];
+    }
+    
+    function updateConfidenceIndicator(confidence) {
+        // Create dynamic confidence visualization
+        const confidenceBar = document.createElement('div');
+        confidenceBar.className = 'confidence-indicator';
+        confidenceBar.innerHTML = `
+            <div class="confidence-label">${currentLanguage === 'pt' ? 'Confiança da Análise' : 'Analysis Confidence'}</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: ${confidence}%; background: var(--gradient-luxury);"></div>
+            </div>
+            <div class="confidence-value">${confidence}%</div>
+        `;
+        
+        // Add to photo preview area if it exists
+        const photoPreview = document.getElementById('photo-preview');
+        if (photoPreview && !photoPreview.querySelector('.confidence-indicator')) {
+            photoPreview.appendChild(confidenceBar);
+        }
     }
 
     function generateAIRecommendations(skinAnalysis, preferences) {
@@ -1261,8 +1496,17 @@ function setupContactForm() {
 
 
 
-// Scroll Animations Setup
+// Scroll Animations Setup with proper cleanup
 function setupScrollAnimations() {
+    // Check for reduced motion preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Still add fade-in class immediately for accessibility
+        document.querySelectorAll('section, .service-card').forEach(element => {
+            element.classList.add('fade-in');
+        });
+        return;
+    }
+
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -100px 0px'
@@ -1283,32 +1527,91 @@ function setupScrollAnimations() {
         observer.observe(section);
     });
 
-    // Observe service cards
+    // Observe service cards with staggered timing
     const serviceCards = document.querySelectorAll('.service-card');
     serviceCards.forEach((card, index) => {
+        // Use requestAnimationFrame instead of setTimeout for better performance
         setTimeout(() => {
-            observer.observe(card);
+            if (observer && card) {
+                observer.observe(card);
+            }
         }, index * 100);
+    });
+
+    // Store observer for cleanup
+    window.scrollAnimationObserver = observer;
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (window.scrollAnimationObserver) {
+            window.scrollAnimationObserver.disconnect();
+            window.scrollAnimationObserver = null;
+        }
     });
 }
 
-// Parallax Effects Setup
+// Parallax Effects Setup with enhanced performance
 function setupParallaxEffects() {
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
+    let ticking = false;
+    let lastScrollY = window.pageYOffset;
+    
+    // Cache DOM elements for better performance
+    const heroBackground = document.querySelector('.hero-background');
+    const swatches = document.querySelectorAll('.swatch');
+    
+    // Only proceed if elements exist
+    if (!heroBackground && swatches.length === 0) return;
+    
+    function updateParallax() {
+        const currentScrollY = window.pageYOffset;
+        
+        // Only update if scroll position changed significantly
+        if (Math.abs(currentScrollY - lastScrollY) < 2) {
+            ticking = false;
+            return;
+        }
+        
+        const rate = currentScrollY * -0.5;
         
         // Hero background parallax
-        const heroBackground = document.querySelector('.hero-background');
         if (heroBackground) {
-            heroBackground.style.transform = `translateY(${rate}px)`;
+            heroBackground.style.transform = `translate3d(0, ${rate}px, 0)`;
         }
 
-        // Color swatches parallax
-        const swatches = document.querySelectorAll('.swatch');
+        // Color swatches parallax with will-change optimization
         swatches.forEach((swatch, index) => {
             const speed = 0.2 + (index * 0.1);
-            swatch.style.transform = `translateY(${scrolled * speed}px)`;
+            swatch.style.transform = `translate3d(0, ${currentScrollY * speed}px, 0)`;
+        });
+        
+        lastScrollY = currentScrollY;
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+        }
+    }
+    
+    // Set will-change property for better performance
+    if (heroBackground) {
+        heroBackground.style.willChange = 'transform';
+    }
+    swatches.forEach(swatch => {
+        swatch.style.willChange = 'transform';
+    });
+    
+    window.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (heroBackground) {
+            heroBackground.style.willChange = 'auto';
+        }
+        swatches.forEach(swatch => {
+            swatch.style.willChange = 'auto';
         });
     });
 }
@@ -1324,6 +1627,86 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Cross-browser smooth scroll fallback
+function animateScrollTo(targetY, duration = 600) {
+    const startY = window.pageYOffset || document.documentElement.scrollTop;
+    const distance = targetY - startY;
+    const startTime = performance.now();
+    
+    function easeInOutQuart(t) {
+        return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
+    }
+    
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = easeInOutQuart(progress);
+        
+        window.scrollTo(0, startY + distance * ease);
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+    
+    requestAnimationFrame(animate);
+}
+
+// Mobile viewport and keyboard handling
+function setupMobileViewportHandling() {
+    // Handle mobile keyboard appearance/disappearance
+    const initialViewportHeight = window.innerHeight;
+    let currentViewportHeight = initialViewportHeight;
+    
+    // Detect if virtual keyboard is open
+    function isKeyboardOpen() {
+        return window.innerHeight < initialViewportHeight * 0.75;
+    }
+    
+    // Handle viewport height changes (keyboard open/close)
+    function handleViewportChange() {
+        const newHeight = window.innerHeight;
+        const heightDifference = Math.abs(newHeight - currentViewportHeight);
+        
+        // Only react to significant height changes (likely keyboard)
+        if (heightDifference > 150) {
+            const activeElement = document.activeElement;
+            
+            // If keyboard opened and we have an active input, adjust scroll
+            if (isKeyboardOpen() && activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA'
+            )) {
+                // Delay to let keyboard animation finish
+                setTimeout(() => {
+                    const rect = activeElement.getBoundingClientRect();
+                    if (rect.bottom > window.innerHeight - 50) {
+                        activeElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                }, 300);
+            }
+        }
+        
+        currentViewportHeight = newHeight;
+    }
+    
+    // Throttled viewport change handler
+    const throttledViewportHandler = debounce(handleViewportChange, 150);
+    
+    // Listen for viewport changes
+    window.addEventListener('resize', throttledViewportHandler);
+    
+    // Handle orientation changes
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            currentViewportHeight = window.innerHeight;
+        }, 500);
+    });
 }
 
 // Initialize animations on load
@@ -1383,7 +1766,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Handle resize events
+// Handle resize events with improved logic
 window.addEventListener('resize', debounce(function() {
-    // Handle any resize-specific functionality
+    // Only adjust scroll if AI section is active and significantly out of view
+    const activeAIStep = document.querySelector('.ai-step.active');
+    if (activeAIStep) {
+        requestAnimationFrame(() => {
+            const rect = activeAIStep.getBoundingClientRect();
+            const navbar = document.querySelector('.navbar');
+            const navbarHeight = navbar ? navbar.offsetHeight : 80;
+            const threshold = navbarHeight + 50; // Add buffer
+            
+            // Only scroll if element is significantly out of view
+            if (rect.top < -threshold || rect.bottom > window.innerHeight + threshold) {
+                scrollToAISection(activeAIStep.id, 80);
+            }
+        });
+    }
 }, 250));
