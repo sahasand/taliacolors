@@ -361,6 +361,18 @@ const translations = {
 // Current language
 let currentLanguage = 'pt';
 
+// Centralized DOM cache
+const DOM = {
+    navbar: null,
+    lightbox: null,
+    languageSelector: null,
+    init() {
+        this.navbar = document.querySelector('.navbar');
+        this.lightbox = document.getElementById('lightbox');
+        this.languageSelector = document.querySelector('.language-selector');
+    }
+};
+
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeWebsite();
@@ -368,16 +380,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize all website functionality
 function initializeWebsite() {
+    DOM.init();
     setupNavigation();
     setupLanguageSelector();
     setupSmoothScrolling();
     setupGallery();
     setupColorPicker();
-    setupPriceCalculator();
-    setupContactForm();
     setupScrollAnimations();
     setupParallaxEffects();
     setupMobileViewportHandling();
+    initLightboxEvents();
 }
 
 // Navigation Setup
@@ -402,7 +414,6 @@ function setupNavigation() {
 
     // Navbar scroll effect with enhanced performance optimization
     let navbarTicking = false;
-    const navbar = document.querySelector('.navbar');
     let lastScrollY = window.scrollY;
     
     function updateNavbar() {
@@ -415,9 +426,9 @@ function setupNavigation() {
         }
         
         if (currentScrollY > 100) {
-            navbar.style.background = 'rgba(248, 250, 252, 0.98)';
+            DOM.navbar.style.background = 'rgba(248, 250, 252, 0.98)';
         } else {
-            navbar.style.background = 'rgba(248, 250, 252, 0.95)';
+            DOM.navbar.style.background = 'rgba(248, 250, 252, 0.95)';
         }
         
         lastScrollY = currentScrollY;
@@ -444,12 +455,12 @@ function setupLanguageSelector() {
     // Toggle dropdown
     langToggle.addEventListener('click', function(e) {
         e.stopPropagation();
-        document.querySelector('.language-selector').classList.toggle('active');
+        DOM.languageSelector.classList.toggle('active');
     });
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function() {
-        document.querySelector('.language-selector').classList.remove('active');
+        DOM.languageSelector.classList.remove('active');
     });
 
     // Language selection
@@ -468,7 +479,7 @@ function setupLanguageSelector() {
             changeLanguage(selectedLang);
             
             // Close dropdown
-            document.querySelector('.language-selector').classList.remove('active');
+            DOM.languageSelector.classList.remove('active');
         });
     });
 }
@@ -496,18 +507,6 @@ function changeLanguage(lang) {
         }
     });
 
-    // Update price calculator currency
-    updatePriceCalculatorCurrency(lang);
-}
-
-// Update Price Calculator Currency
-function updatePriceCalculatorCurrency(lang) {
-    const priceAmount = document.getElementById('calculated-price');
-    if (priceAmount) {
-        const currentAmount = priceAmount.textContent.replace(/[^\d]/g, '');
-        const currency = lang === 'pt' ? 'R$' : '$';
-        priceAmount.textContent = `${currency} ${currentAmount}`;
-    }
 }
 
 // Enhanced Smooth Scrolling Setup with mobile optimizations
@@ -601,9 +600,13 @@ function setupGallery() {
     galleryItems.forEach(item => {
         const galleryBtn = item.querySelector('.gallery-btn');
         if (galleryBtn) {
-            galleryBtn.addEventListener('click', function() {
-                const title = item.querySelector('.image-placeholder span').textContent;
-                openLightbox(title);
+            galleryBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const imageElement = item.querySelector('.gallery-image');
+                if (imageElement) {
+                    openLightbox(imageElement);
+                }
             });
         }
     });
@@ -994,38 +997,6 @@ function setupAIColorPicker() {
         }, 300);
     });
     
-    // Generate AI results summary for sharing
-    function generateAIResultsSummary() {
-        if (!skinToneAnalysis) return null;
-        
-        const isPortuguese = currentLanguage === 'pt';
-        const greeting = isPortuguese ? 
-            '🎨 Olá! Acabei de usar o seu AI Consultora de Cores e aqui estão meus resultados:' :
-            '🎨 Hello! I just used your AI Color Consultant and here are my results:';
-            
-        const skinToneLabel = isPortuguese ? 'Tom de Pele:' : 'Skin Tone:';
-        const skinToneText = isPortuguese ? 
-            (skinToneAnalysis.tone === 'warm' ? 'Quente' : skinToneAnalysis.tone === 'cool' ? 'Frio' : 'Neutro') :
-            (skinToneAnalysis.tone === 'warm' ? 'Warm' : skinToneAnalysis.tone === 'cool' ? 'Cool' : 'Neutral');
-            
-        const undertoneLabel = isPortuguese ? 'Subtom:' : 'Undertone:';
-        const undertoneText = isPortuguese ?
-            (skinToneAnalysis.undertone === 'golden' ? 'Dourado' : skinToneAnalysis.undertone === 'pink' ? 'Rosado' : 'Azeite') :
-            (skinToneAnalysis.undertone === 'golden' ? 'Golden' : skinToneAnalysis.undertone === 'pink' ? 'Pink' : 'Olive');
-            
-        const confidenceLabel = isPortuguese ? 'Confiança da IA:' : 'AI Confidence:';
-        const bookingText = isPortuguese ? 
-            'Gostaria de agendar uma consulta para discutir essas recomendações de cor!' :
-            'I would like to book a consultation to discuss these color recommendations!';
-        
-        return `${greeting}
-
-${skinToneLabel} ${skinToneText}
-${undertoneLabel} ${undertoneText}
-${confidenceLabel} ${skinToneAnalysis.confidence}%
-
-${bookingText}`;
-    }
 
     // Simplified and reliable AI section scroll function with accessibility
     function scrollToAISection(targetElementId = null, offset = 100) {
@@ -1379,120 +1350,6 @@ ${bookingText}`;
     }
 }
 
-// Price Calculator Setup
-function setupPriceCalculator() {
-    const serviceSelect = document.getElementById('service-type');
-    const lengthSelect = document.getElementById('hair-length');
-    const conditionSelect = document.getElementById('hair-condition');
-    const priceDisplay = document.getElementById('calculated-price');
-
-    function calculatePrice() {
-        const service = serviceSelect.value;
-        const length = lengthSelect.value;
-        const condition = conditionSelect.value;
-
-        if (!service || !length || !condition) {
-            priceDisplay.textContent = currentLanguage === 'pt' ? 'R$ 0' : '$ 0';
-            return;
-        }
-
-        const servicePrice = parseInt(serviceSelect.selectedOptions[0].getAttribute('data-price')) || 0;
-        const lengthMultiplier = parseFloat(lengthSelect.selectedOptions[0].getAttribute('data-multiplier')) || 1;
-        const conditionAdjustment = parseInt(conditionSelect.selectedOptions[0].getAttribute('data-adjustment')) || 0;
-
-        const totalPrice = Math.round((servicePrice * lengthMultiplier) + conditionAdjustment);
-        const currency = currentLanguage === 'pt' ? 'R$' : '$';
-        priceDisplay.textContent = `${currency} ${totalPrice}`;
-    }
-
-    // Add event listeners
-    [serviceSelect, lengthSelect, conditionSelect].forEach(select => {
-        select.addEventListener('change', calculatePrice);
-    });
-}
-
-// Contact Form Setup
-function setupContactForm() {
-    const form = document.getElementById('booking-form');
-    const inputs = form.querySelectorAll('input[required], textarea[required]');
-
-    // Form validation
-    function validateField(field) {
-        const value = field.value.trim();
-        const errorElement = document.getElementById(field.id + '-error');
-        let isValid = true;
-        let errorMessage = '';
-
-        if (!value) {
-            isValid = false;
-            errorMessage = currentLanguage === 'pt' ? 'Este campo é obrigatório.' : 'This field is required.';
-        } else if (field.type === 'email' && !isValidEmail(value)) {
-            isValid = false;
-            errorMessage = currentLanguage === 'pt' ? 'Por favor, insira um email válido.' : 'Please enter a valid email address.';
-        } else if (field.type === 'tel' && !isValidPhone(value)) {
-            isValid = false;
-            errorMessage = currentLanguage === 'pt' ? 'Por favor, insira um telefone válido.' : 'Please enter a valid phone number.';
-        }
-
-        if (errorElement) {
-            errorElement.textContent = errorMessage;
-        }
-
-        field.classList.toggle('error', !isValid);
-        return isValid;
-    }
-
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    function isValidPhone(phone) {
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
-    }
-
-    // Real-time validation
-    inputs.forEach(input => {
-        input.addEventListener('blur', () => validateField(input));
-        input.addEventListener('input', () => {
-            if (input.classList.contains('error')) {
-                validateField(input);
-            }
-        });
-    });
-
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        let isFormValid = true;
-        inputs.forEach(input => {
-            if (!validateField(input)) {
-                isFormValid = false;
-            }
-        });
-
-        if (isFormValid) {
-            // Simulate form submission
-            const submitBtn = form.querySelector('.submit-btn');
-            const originalText = submitBtn.querySelector('span').textContent;
-            
-            submitBtn.querySelector('span').textContent = currentLanguage === 'pt' ? 'Enviando...' : 'Sending...';
-            submitBtn.disabled = true;
-
-            setTimeout(() => {
-                alert(currentLanguage === 'pt' ? 
-                    'Mensagem enviada com sucesso! Entraremos em contato em breve.' : 
-                    'Message sent successfully! We\'ll be in touch soon.');
-                
-                form.reset();
-                submitBtn.querySelector('span').textContent = originalText;
-                submitBtn.disabled = false;
-            }, 2000);
-        }
-    });
-}
 
 
 
@@ -1717,54 +1574,122 @@ window.addEventListener('load', function() {
 
 // Lightbox functionality
 function openLightbox(img) {
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImage = lightbox.querySelector('.lightbox-image');
-    const lightboxTitle = lightbox.querySelector('#lightbox-title');
+    if (!DOM.lightbox) {
+        console.error('openLightbox: DOM.lightbox is null - DOM not initialized?');
+        return;
+    }
     
-    // Create image element for lightbox
-    lightboxImage.innerHTML = `<img src="${img.src}" alt="${img.alt}" style="width: 100%; height: auto; max-height: 90vh; object-fit: contain;">`;
-    lightboxTitle.textContent = img.alt;
+    const lightboxImage = DOM.lightbox.querySelector('.lightbox-image');
+    const lightboxTitle = DOM.lightbox.querySelector('#lightbox-title');
+    
+    // Parameter validation and error handling
+    if (!img) {
+        console.error('openLightbox: No image parameter provided');
+        return;
+    }
+    
+    // Handle different parameter types
+    let imageSrc, imageAlt, imageTitle;
+    
+    if (typeof img === 'string') {
+        // Handle string parameter (legacy support)
+        imageSrc = 'https://via.placeholder.com/800x600/9333ea/ffffff?text=' + encodeURIComponent(img);
+        imageAlt = img;
+        imageTitle = img;
+    } else if (img.tagName === 'IMG') {
+        // Handle direct image element
+        imageSrc = img.src;
+        imageAlt = img.alt || 'Gallery Image';
+        imageTitle = img.alt || 'Gallery Image';
+    } else if (img.querySelector && img.querySelector('img')) {
+        // Handle container element with image inside
+        const actualImg = img.querySelector('img');
+        imageSrc = actualImg.src;
+        imageAlt = actualImg.alt || 'Gallery Image';
+        imageTitle = actualImg.alt || 'Gallery Image';
+    } else if (img.style && img.style.backgroundImage) {
+        // Handle elements with background images
+        const bgImage = img.style.backgroundImage;
+        const urlMatch = bgImage.match(/url\("(.+)"\)/);
+        if (urlMatch) {
+            imageSrc = urlMatch[1];
+            imageAlt = img.getAttribute('aria-label') || 'Gallery Image';
+            imageTitle = imageAlt;
+        } else {
+            console.error('openLightbox: Could not extract background image URL');
+            return;
+        }
+    } else {
+        console.error('openLightbox: Invalid image parameter type');
+        return;
+    }
+    
+    // Find or create image element, preserving the title structure
+    let existingImg = lightboxImage.querySelector('img');
+    if (existingImg) {
+        // Update existing image
+        existingImg.src = imageSrc;
+        existingImg.alt = imageAlt;
+    } else {
+        // Create new image and insert before the image-placeholder div
+        const imgElement = document.createElement('img');
+        imgElement.src = imageSrc;
+        imgElement.alt = imageAlt;
+        imgElement.style.cssText = 'width: 100%; height: auto; max-height: 90vh; object-fit: contain;';
+        
+        const placeholder = lightboxImage.querySelector('.image-placeholder');
+        if (placeholder) {
+            lightboxImage.insertBefore(imgElement, placeholder);
+        } else {
+            lightboxImage.appendChild(imgElement);
+        }
+    }
+    
+    // Update title text
+    if (lightboxTitle) {
+        lightboxTitle.textContent = imageTitle;
+    } else {
+        console.error('lightboxTitle element not found');
+    }
     
     // Show lightbox
-    lightbox.style.display = 'flex';
-    lightbox.setAttribute('aria-hidden', 'false');
+    DOM.lightbox.style.display = 'flex';
+    DOM.lightbox.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     
     // Focus on close button for accessibility
     setTimeout(() => {
-        lightbox.querySelector('.lightbox-close').focus();
+        DOM.lightbox.querySelector('.lightbox-close').focus();
     }, 100);
 }
 
 function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    lightbox.style.display = 'none';
-    lightbox.setAttribute('aria-hidden', 'true');
+    DOM.lightbox.style.display = 'none';
+    DOM.lightbox.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = 'auto';
 }
 
-// Event listeners for lightbox
-document.addEventListener('DOMContentLoaded', function() {
-    const lightbox = document.getElementById('lightbox');
-    const closeBtn = lightbox.querySelector('.lightbox-close');
+// Initialize lightbox event listeners (called from main init)
+function initLightboxEvents() {
+    const closeBtn = DOM.lightbox.querySelector('.lightbox-close');
     
     // Close button click
     closeBtn.addEventListener('click', closeLightbox);
     
     // Click outside image to close
-    lightbox.addEventListener('click', function(e) {
-        if (e.target === lightbox) {
+    DOM.lightbox.addEventListener('click', function(e) {
+        if (e.target === DOM.lightbox) {
             closeLightbox();
         }
     });
     
     // ESC key to close
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+        if (e.key === 'Escape' && DOM.lightbox.style.display === 'flex') {
             closeLightbox();
         }
     });
-});
+}
 
 // Handle resize events with improved logic
 window.addEventListener('resize', debounce(function() {
